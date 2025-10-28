@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,7 @@ import {
 // Import React Markdown for rendering markdown content
 import ReactMarkdown from "react-markdown";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import html2canvas from "html2canvas-pro";
 import WordSearchGrid from "./word-search";
 import WordSearch from "./word-search";
 import ActivitySelector from "./activity-selector";
@@ -66,12 +66,19 @@ export function ActivityCreator() {
     numItens: "10",
   });
 
+  const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
+
+
+
   const [wordSearchData, setWordSearchData] = useState<{
     grid: string[][];
     wordList: string[];
   } | null>(null);
   const [isGeneratingWordSearch, setIsGeneratingWordSearch] = useState(false);
   const [isDocumentHeaderOpen, setIsDocumentHeaderOpen] = useState(false);
+
+
+  const disableGenerateButton = useMemo(() => selectedActivities.every((activity) => !activity) && !!formData.tema, [selectedActivities]) 
 
   const generateWordSearchPDF = async () => {
     if (!wordSearchData) return;
@@ -221,30 +228,7 @@ export function ActivityCreator() {
       yPosition += 10;
     }
 
-    // Word list
-    // yPosition += 10;
-    // doc.setFont("helvetica", "bold");
-    // doc.setFontSize(10);
-    // doc.text("PALAVRAS PARA ENCONTRAR:", 20, yPosition);
-    // yPosition += 8;
-
-    // doc.setFont("helvetica", "normal");
-    // doc.setFontSize(9);
-
-    // // Split words into two columns
-    // const wordsPerColumn = Math.ceil(wordSearchData.wordList.length / 2);
-    // wordSearchData.wordList.forEach((word, index) => {
-    //   const xPosition = index < wordsPerColumn ? 20 : 120;
-    //   const yOffset = index < wordsPerColumn ? index : index - wordsPerColumn;
-
-    //   if (yPosition + yOffset * 6 < 280) {
-    //     doc.text(
-    //       `${index + 1}. ${word.toUpperCase()}`,
-    //       xPosition,
-    //       yPosition + yOffset * 6
-    //     );
-    //   }
-    // });
+  
 
     // Save the PDF
     doc.save(
@@ -621,6 +605,8 @@ export function ActivityCreator() {
 
               <div>
                 <ActivitySelector
+                  setActivities={setSelectedActivities}
+                  
                   activities={[
                     {
                       name: "Caça palavras",
@@ -659,10 +645,13 @@ export function ActivityCreator() {
                     },
                   ]}
                 />
+
+                <div className="flex m-2 p-2 gap-2  ">
+
                 <Button
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 "
                   onClick={generateWordSearch}
-                  disabled={isGeneratingWordSearch || !formData.tema}
+                  disabled={isGeneratingWordSearch  || !disableGenerateButton}
                 >
                   {isGeneratingWordSearch ? (
                     <>
@@ -673,12 +662,13 @@ export function ActivityCreator() {
                     "Gerar Atividade"
                   )}
                 </Button>
-              </div>
-                {/* Action Buttons */}
-                <div className="flex gap-3">
                   <Button variant="outline" onClick={handleClear}>
                     Limpar
                   </Button>
+                </div>
+              </div>
+                {/* Action Buttons */}
+                <div className="flex gap-3">
                 </div>
             </CardContent>
           </Card>

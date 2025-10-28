@@ -1,12 +1,15 @@
+"use client"
 import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Apple, Pencil } from "lucide-react";
 
 export default function ActivitySelector({
   activities,
+  setActivities,
 }: {
-  activities: { name: string; subtitle: string, disabled?: boolean }[];
+  activities: { name: string; subtitle: string; disabled?: boolean }[];
+  setActivities: (activities: number[]) => void;
 }) {
   const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
 
@@ -14,10 +17,14 @@ export default function ActivitySelector({
     if (checked) {
       setSelectedActivities([...selectedActivities, index]);
     } else {
-      setSelectedActivities(selectedActivities.filter(i => i !== index));
+      setSelectedActivities(selectedActivities.filter((i) => i !== index));
     }
-  };
 
+  };
+  
+  useEffect(() => {
+    setActivities(selectedActivities);
+  }, [selectedActivities]);
   return (
     <div>
       <Label>Selecione atividades:</Label>
@@ -26,29 +33,28 @@ export default function ActivitySelector({
           <div
             key={index}
             className={`flex flex-col justify-between h-24  w-80 items-start space-x-2 p-2   bg-gray-300 rounded-2xl  ${
-              activity.disabled 
-                ? "  text-gray-200" 
-                : "hover:bg-gray-50"
+              activity.disabled ? "  text-gray-200" : "hover:bg-gray-50"
             }`}
           >
             <div className="flex gap-2 w-full  ">
-                 
-                <Checkbox
+              <Checkbox
                 id={`activity-${index}`}
                 checked={selectedActivities.includes(index)}
-                onCheckedChange={(checked) => handleCheckboxChange(index, !!checked)}
+                onCheckedChange={(checked) =>
+                  handleCheckboxChange(index, !!checked)
+                }
                 disabled={activity.disabled}
                 className="mt-2   bg-white "
-                />
-                <Label 
+              />
+              <Label
                 htmlFor={`activity-${index}`}
                 className={`flex-1 cursor-pointer text-xl ${
-                    activity.disabled ? "text-gray-600" : "text-gray-900"
+                  activity.disabled ? "text-gray-600" : "text-gray-900"
                 }`}
-                >
+              >
                 {activity.name} {activity.disabled && "(Em breve)"}
-                </Label>
-                <Pencil  className="self-start  "/>
+              </Label>
+              <Pencil className="self-start  " />
             </div>
             <span className="text-xs text-gray-600">{activity.subtitle}</span>
           </div>

@@ -22,3 +22,12 @@ model User {
   password  String
   createdAt DateTime @default(now())
 }
+
+model Activity {
+  id        Int      @id @default(autoincrement())
+  content   Json?
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  timestamp DateTime @default(now())
+
+}
