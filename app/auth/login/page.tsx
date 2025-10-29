@@ -26,9 +26,9 @@ export default function LoginPage() {
     console.log('login result:', result);
     if (result.success) {
         console.log('login successful, refreshing router and navigating to /activity-creator');
-        router.refresh()
-        router.replace("/activity-creator");
-        //router.push("/activity-creator");
+        
+         
+       router.push("/activity-creator");
     } else {
       setError(result.error || "Erro ao fazer login");
     }
