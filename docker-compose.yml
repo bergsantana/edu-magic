@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: edu-magic-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: edu_magic
+      POSTGRES_USER: edu_magic_user
+      POSTGRES_PASSWORD: edu_magic_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edu_magic_user -d edu_magic"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edu-magic-app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://edu_magic_user:edu_magic_password@postgres:5432/edu_magic
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # Mount source code for development (remove in production)
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+
+  # Development version (optional)
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: edu-magic-app-dev
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://edu_magic_user:edu_magic_password@postgres:5432/edu_magic
+      NODE_ENV: development
+    ports:
+      - "3001:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
