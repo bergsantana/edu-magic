@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,15 +25,12 @@ import {
   Loader2,
   ChevronUp,
   ChevronDown,
-  Divide,
   LogOut,
 } from "lucide-react";
 // Import React Markdown for rendering markdown content
-import ReactMarkdown from "react-markdown";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas-pro";
 import WordSearchGrid from "./word-search";
-import WordSearch from "./word-search";
 import ActivitySelector from "./activity-selector";
 import { useUser } from "@/contexts/UserContext";
 
@@ -48,7 +44,7 @@ const words = [
   "GALAXIA",
 ];
 export function ActivityCreator() {
-  const { user, logout, apiCall } = useUser();
+  const { user, logout } = useUser();
 
   const [formData, setFormData] = useState({
     escola: false,
@@ -78,7 +74,7 @@ export function ActivityCreator() {
   const [isDocumentHeaderOpen, setIsDocumentHeaderOpen] = useState(false);
 
 
-  const disableGenerateButton = useMemo(() => selectedActivities.every((activity) => !activity) && !!formData.tema, [selectedActivities]) 
+  const disableGenerateButton = useMemo(() => selectedActivities.every((activity) => !activity) && !!formData.tema, [selectedActivities, formData.tema]) 
 
   const generateWordSearchPDF = async () => {
     if (!wordSearchData) return;
@@ -219,7 +215,7 @@ export function ActivityCreator() {
       doc.setFont("courier", "normal");
       doc.setFontSize(8);
       const gridLines = formatWordSearchGrid(wordSearchData.grid).split("\n");
-      gridLines.forEach((line, index) => {
+      gridLines.forEach((line, _) => {
         if (line.trim() && yPosition < 280) {
           doc.text(line, 20, yPosition);
           yPosition += 4;
@@ -478,7 +474,7 @@ export function ActivityCreator() {
               </h2>
 
               {/* Document Header Checkboxes */}
-              <div className="mb-6 border-1 border-gray-400 rounded-2xl p-2">
+              <div className="mb-6 border border-gray-400 rounded-2xl p-2">
                 <div
                   className="flex justify-between p-1 hover:bg-gray-100 rounded-2xl transition hover:cursor-pointer   "
                   onClick={() => setIsDocumentHeaderOpen(!isDocumentHeaderOpen)}

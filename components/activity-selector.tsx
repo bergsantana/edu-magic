@@ -2,7 +2,7 @@
 import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
 import { useEffect, useState } from "react";
-import { Apple, Pencil } from "lucide-react";
+import {  Pencil } from "lucide-react";
 
 export default function ActivitySelector({
   activities,
@@ -24,7 +24,7 @@ export default function ActivitySelector({
   
   useEffect(() => {
     setActivities(selectedActivities);
-  }, [selectedActivities]);
+  }, [selectedActivities, setActivities]);
   return (
     <div>
       <Label>Selecione atividades:</Label>

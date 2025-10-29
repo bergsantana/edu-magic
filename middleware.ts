@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import jwt from 'jsonwebtoken'
 import { cookies } from 'next/headers'
 //import "dotenv/config"
 
@@ -28,7 +27,6 @@ export async function middleware(request: NextRequest) {
   const cookieStr = await cookies()
   const myToken = cookieStr.get('edu-magic-auth-token')
   console.log('Middleware found token in cookies:', myToken)
-  const token = request.cookies.get('edu-magic-auth-token')?.value
    
   
   if (!myToken?.value) {

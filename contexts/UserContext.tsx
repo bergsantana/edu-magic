@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext,  useState } from "react";
 import { useRouter } from "next/navigation";
 //port { cookies } from "next/headers";
 
@@ -13,6 +13,7 @@ name: string;
 interface UserContextType {
   user: User | null;
   loading: boolean;
+  setLoading: (loading: boolean) => void;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signup: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -131,6 +132,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         return { success: false, error: data.error || 'Erro ao fazer login' };
       }
     } catch (error) {
+      console.error('Login error:', error);
       return { success: false, error: 'Erro de conexão. Tente novamente.' };
     }
   };
@@ -156,6 +158,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         return { success: false, error: data.error || 'Erro ao criar conta' };
       }
     } catch (error) {
+      console.error('Signup error:', error);
       return { success: false, error: 'Erro de conexão. Tente novamente.' };
     }
   };
@@ -196,6 +199,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const contextValue: UserContextType = {
     user,
     loading,
+    setLoading,
     login,
     signup,
     logout,
