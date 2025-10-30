@@ -18,7 +18,7 @@ export async function POST(req: Request) {
      
     const API_URL = process.env.API_URL || 'http://localhost:3333';
     
-    const response = await fetch(`${API_URL}/auth/signup`, {
+    const response = await fetch(`${API_URL}/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
