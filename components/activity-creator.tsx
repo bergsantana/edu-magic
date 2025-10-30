@@ -26,6 +26,7 @@ import {
   ChevronUp,
   ChevronDown,
   LogOut,
+  Info
 } from "lucide-react";
 // Import React Markdown for rendering markdown content
 import jsPDF from "jspdf";
@@ -33,6 +34,7 @@ import html2canvas from "html2canvas-pro";
 import WordSearchGrid from "./word-search";
 import ActivitySelector from "./activity-selector";
 import { useUser } from "@/contexts/UserContext";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 const words = [
   "SOL",
@@ -500,6 +502,18 @@ export function ActivityCreator() {
                   <Label className="mb-3 block text-sm font-medium">
                     Cabeçalho do documento
                   </Label>
+                  <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-4 h-4 text-gray-500 hover:text-gray-700 cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-sm">
+                            Estas configurações alteram apenas os campos do cabeçalho do documento impresso, não influenciam o conteúdo gerado da atividade.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   <button className="    p-4 text-left font-medium text-gray-800  ">
                     {isDocumentHeaderOpen ? (
                       <ChevronUp className="w-5 h-5 text-gray-600" />
@@ -522,7 +536,7 @@ export function ActivityCreator() {
                       { id: "professor", label: "Professor" },
                       { id: "disciplina", label: "Disciplina" },
                       { id: "serie", label: "Série" },
-                      { id: "ano", label: "Ano" },
+                      
                       { id: "sala", label: "Sala" },
                       { id: "turno", label: "Turno" },
                     ].map((item) => (
@@ -777,7 +791,7 @@ export function ActivityCreator() {
                     {/* Title */}
                     <div className="text-center mb-6">
                       <h2 className="text-lg font-bold uppercase tracking-wider">
-                        CAÇA-PALAVRAS
+                        {formData.tema.toUpperCase()} 
                       </h2>
                     </div>
                     {/* Words List */}
