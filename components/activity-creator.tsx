@@ -61,7 +61,7 @@ export function ActivityCreator() {
     professor: false,
     disciplina: false,
     serie: false,
-    ano: false,
+     
     sala: false,
     turno: false,
     disciplinaValue: "portugues",
@@ -246,7 +246,7 @@ export function ActivityCreator() {
       professor: false,
       disciplina: false,
       serie: false,
-      ano: false,
+     
       sala: false,
       turno: false,
       disciplinaValue: "portugues",
@@ -703,7 +703,7 @@ export function ActivityCreator() {
                               "professor",
                               "disciplina",
                               "serie",
-                              "ano",
+                               
                               "sala",
                               "turno",
                             ].includes(key) && value
