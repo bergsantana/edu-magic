@@ -32,7 +32,7 @@ export default function ActivitySelector({
         {activities.map((activity, index) => (
           <div
             key={index}
-            className={`flex flex-col justify-between h-24  w-80 items-start space-x-2 p-2   bg-gray-300 rounded-2xl  ${
+            className={`flex flex-col justify-between h-32  w-64 items-start space-x-2 p-2   bg-gray-300 rounded-2xl  ${
               activity.disabled ? "  text-gray-200" : "hover:bg-gray-50"
             }`}
           >

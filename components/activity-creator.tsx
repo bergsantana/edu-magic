@@ -43,6 +43,15 @@ const words = [
   "LUA",
   "GALAXIA",
 ];
+
+const disciplinasToWords: Record<string, string> = {
+  portugues: "Português",
+  matematica: "Matemática",
+  ciencias: "Ciências",
+  historia: "História",
+  geografia: "Geografia",
+  ingles: "Inglês",
+};
 export function ActivityCreator() {
   const { user, logout } = useUser();
 
@@ -98,93 +107,93 @@ export function ActivityCreator() {
     const doc = new jsPDF();
     let yPosition = 20;
 
-    // Title
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
-    doc.text(`CAÇA-PALAVRAS - ${formData.tema.toUpperCase()}`, 20, yPosition);
-    yPosition += 15;
+    // // Title
+    // doc.setFontSize(16);
+    // doc.setFont("helvetica", "bold");
+    // doc.text(`CAÇA-PALAVRAS - ${formData.tema.toUpperCase()}`, 20, yPosition);
+    // yPosition += 15;
 
-    // Form information
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(
-      `Disciplina: ${
-        disciplinaNames[
-          formData.disciplinaValue as keyof typeof disciplinaNames
-        ]
-      }`,
-      20,
-      yPosition
-    );
-    yPosition += 6;
-    doc.text(`Série/Ano: ${formData.serieValue}º ano`, 20, yPosition);
-    yPosition += 6;
-    doc.text(`Tema: ${formData.tema}`, 20, yPosition);
-    yPosition += 6;
-    doc.text(
-      `Dificuldade: ${
-        dificuldadeNames[formData.dificuldade as keyof typeof dificuldadeNames]
-      }`,
-      20,
-      yPosition
-    );
-    yPosition += 10;
+    // // Form information
+    // doc.setFontSize(10);
+    // doc.setFont("helvetica", "normal");
+    // doc.text(
+    //   `Disciplina: ${
+    //     disciplinaNames[
+    //       formData.disciplinaValue as keyof typeof disciplinaNames
+    //     ]
+    //   }`,
+    //   20,
+    //   yPosition
+    // );
+    // yPosition += 6;
+    // doc.text(`Série/Ano: ${formData.serieValue}º ano`, 20, yPosition);
+    // yPosition += 6;
+    // doc.text(`Tema: ${formData.tema}`, 20, yPosition);
+    // yPosition += 6;
+    // doc.text(
+    //   `Dificuldade: ${
+    //     dificuldadeNames[formData.dificuldade as keyof typeof dificuldadeNames]
+    //   }`,
+    //   20,
+    //   yPosition
+    // );
+    // yPosition += 10;
 
-    // Add selected header fields
-    const cabecalhoFields = Object.entries(formData).filter(
-      ([key, value]) =>
-        [
-          "escola",
-          "nome",
-          "professor",
-          "disciplina",
-          "serie",
-          "ano",
-          "sala",
-          "turno",
-        ].includes(key) && value
-    );
+    // // Add selected header fields
+    // const cabecalhoFields = Object.entries(formData).filter(
+    //   ([key, value]) =>
+    //     [
+    //       "escola",
+    //       "nome",
+    //       "professor",
+    //       "disciplina",
+    //       "serie",
+    //       "ano",
+    //       "sala",
+    //       "turno",
+    //     ].includes(key) && value
+    // );
 
-    if (cabecalhoFields.length > 0) {
-      cabecalhoFields.forEach(([key, _]) => {
-        const labels = {
-          escola: "Escola",
-          nome: "Nome",
-          professor: "Professor(a)",
-          disciplina: "Disciplina",
-          serie: "Série",
-          ano: "Ano",
-          sala: "Sala",
-          turno: "Turno",
-        };
-        doc.text(
-          `${labels[key as keyof typeof labels]}: _________________`,
-          20,
-          yPosition
-        );
-        yPosition += 6;
-      });
-      yPosition += 5;
-    }
+    // if (cabecalhoFields.length > 0) {
+    //   cabecalhoFields.forEach(([key, _]) => {
+    //     const labels = {
+    //       escola: "Escola",
+    //       nome: "Nome",
+    //       professor: "Professor(a)",
+    //       disciplina: "Disciplina",
+    //       serie: "Série",
+    //       ano: "Ano",
+    //       sala: "Sala",
+    //       turno: "Turno",
+    //     };
+    //     doc.text(
+    //       `${labels[key as keyof typeof labels]}: _________________`,
+    //       20,
+    //       yPosition
+    //     );
+    //     yPosition += 6;
+    //   });
+    //   yPosition += 5;
+    // }
 
-    // Instructions
-    doc.setFont("helvetica", "bold");
-    doc.text("INSTRUÇÕES:", 20, yPosition);
-    yPosition += 6;
-    doc.setFont("helvetica", "normal");
-    doc.text(
-      "Encontre as palavras escondidas na grade abaixo. As palavras podem estar",
-      20,
-      yPosition
-    );
-    yPosition += 6;
-    doc.text("na horizontal, vertical ou diagonal.", 20, yPosition);
-    yPosition += 15;
+    // // Instructions
+    // doc.setFont("helvetica", "bold");
+    // doc.text("INSTRUÇÕES:", 20, yPosition);
+    // yPosition += 6;
+    // doc.setFont("helvetica", "normal");
+    // doc.text(
+    //   "Encontre as palavras escondidas na grade abaixo. As palavras podem estar",
+    //   20,
+    //   yPosition
+    // );
+    // yPosition += 6;
+    // doc.text("na horizontal, vertical ou diagonal.", 20, yPosition);
+    // yPosition += 15;
 
-    // Grid title
-    doc.setFont("helvetica", "bold");
-    doc.text("CAÇA-PALAVRAS:", 20, yPosition);
-    yPosition += 10;
+    // // Grid title
+    // doc.setFont("helvetica", "bold");
+    // doc.text("CAÇA-PALAVRAS:", 20, yPosition);
+    // yPosition += 10;
 
     // Capture the WordSearchGrid component as image
     try {
@@ -266,17 +275,17 @@ export function ActivityCreator() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-           
           prompt: wordSearchPrompt,
-          
         }),
       });
 
-      const data = await response.json() as { generatedText: string };
+      const data = (await response.json()) as { generatedText: string };
       console.log("API response data for word search:", data);
       try {
         // Parse the JSON response to get the words array
-        const cleanedStrArr = data?.generatedText.replaceAll("\n", "")?.match(/\[.*?\]/)
+        const cleanedStrArr = data?.generatedText
+          .replaceAll("\n", "")
+          ?.match(/\[.*?\]/);
         if (!cleanedStrArr) throw new Error("No array found in response");
         const words = JSON.parse(cleanedStrArr[0]);
         if (Array.isArray(words)) {
@@ -409,6 +418,21 @@ export function ActivityCreator() {
     return result;
   }
 
+  const headerValues = (str: string) => {
+    switch (str) {
+      case "Disciplina":
+        return (
+          `Disciplina: ${disciplinasToWords[formData.disciplinaValue]}` ||
+          "Disciplina:"
+        );
+
+      case "Série":
+        return `Série: ${formData.serieValue}º ano`;
+      default:
+        return str + ":";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -452,8 +476,8 @@ export function ActivityCreator() {
           <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
             Criar nova atividade
           </Button>
-          <Button variant="ghost">Minhas atividades</Button>
-          <Button variant="ghost">Ajuda rápida</Button>
+          <Button variant="ghost" disabled>Minhas atividades</Button>
+          <Button variant="ghost" disabled>Ajuda rápida</Button>
         </div>
       </div>
 
@@ -662,42 +686,13 @@ export function ActivityCreator() {
 
           {/* Preview Section */}
           <Card>
-            <CardContent className="p-6 min-w-[400px]">
+            <CardContent className="p-6 min-w-[600px]">
               {/* Word Search Section */}
               <div className="mt-6">
                 {wordSearchData && (
-                  <div className="prose prose-sm max-w-none">
-                    {/* Form Information Header */}
-                    <div className="bg-blue-50 p-4 rounded-lg mb-4 border border-blue-200">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <strong>Disciplina:</strong>{" "}
-                          {(() => {
-                            const disciplinaNames = {
-                              portugues: "Português",
-                              matematica: "Matemática",
-                              ciencias: "Ciências",
-                              historia: "História",
-                              geografia: "Geografia",
-                              ingles: "Inglês",
-                            };
-                            return disciplinaNames[
-                              formData.disciplinaValue as keyof typeof disciplinaNames
-                            ];
-                          })()}
-                        </div>
-                        <div>
-                          <strong>Série/Ano:</strong> {formData.serieValue}º ano
-                        </div>
-                        <div>
-                          <strong>Tema:</strong> {formData.tema}
-                        </div>
-
-                        <div>
-                          <strong>Nº de palavras:</strong> {formData.numItens}
-                        </div>
-                      </div>
-
+                  <div className="prose prose-sm max-w-none" id="word-search-grid-for-pdf">
+                    {/* Document Header - similar to the image */}
+                    <div className="border-2 border-dashed border-gray-400 p-4 mb-6">
                       {/* Selected Header Fields */}
                       {(() => {
                         const selectedHeaders = Object.entries(formData).filter(
@@ -716,70 +711,113 @@ export function ActivityCreator() {
 
                         if (selectedHeaders.length > 0) {
                           return (
-                            <div className="mt-3 pt-3 border-t border-blue-300">
-                              <div className="text-sm text-gray-600 mb-2">
-                                <strong>
-                                  Campos selecionados para cabeçalho:
-                                </strong>
+                            <div className="space-y-3">
+                              {selectedHeaders.map(([key, _]) => {
+                                const labels = {
+                                  escola: "Escola",
+                                  nome: "Nome",
+                                  professor: "Professor(a)",
+                                  disciplina: "Disciplina",
+                                  serie: "Série",
+                                  ano: "Ano",
+                                  sala: "Sala",
+                                  turno: "Turno",
+                                };
+                                return (
+                                  <div
+                                    key={key}
+                                    className="text-sm border-b border-gray-300 pb-1"
+                                  >
+                                    {headerValues(
+                                      labels[key as keyof typeof labels]
+                                    )}
+                                  </div>
+                                );
+                              })}
+                              <div className="text-sm border-b border-gray-300 pb-1">
+                                Data:
+                                <span className="inline-block w-8     mx-2"></span>
+                                /
+                                <span className="inline-block w-8   mx-2"></span>
+                                /
+                                <span className="inline-block w-8  mx-2"></span>
                               </div>
-                              <div className="grid grid-cols-2 gap-2">
-                                {selectedHeaders.map(([key, _]) => {
-                                  const labels = {
-                                    escola: "Escola",
-                                    nome: "Nome",
-                                    professor: "Professor(a)",
-                                    disciplina: "Disciplina",
-                                    serie: "Série",
-                                    ano: "Ano",
-                                    sala: "Sala",
-                                    turno: "Turno",
-                                  };
-                                  return (
-                                    <div key={key} className="text-xs">
-                                      {labels[key as keyof typeof labels]}:
-                                      _________________
-                                    </div>
-                                  );
-                                })}
+                            </div>
+                          );
+                        } else {
+                          // Default header fields when none are selected
+                          return (
+                            <div className="space-y-3">
+                              <div className="text-sm border-b border-gray-300 pb-1">
+                                Nome:
+                                <span className="inline-block w-64 border-b border-gray-400 ml-2"></span>
+                              </div>
+                              <div className="text-sm border-b border-gray-300 pb-1">
+                                Professor(a):
+                                <span className="inline-block w-56 border-b border-gray-400 ml-2"></span>
+                              </div>
+                              <div className="text-sm border-b border-gray-300 pb-1">
+                                Turma/Escola:
+                                <span className="inline-block w-56 border-b border-gray-400 ml-2"></span>
+                              </div>
+                              <div className="text-sm border-b border-gray-300 pb-1">
+                                Data:
+                                <span className="inline-block w-8     mx-2"></span>
+                                /
+                                <span className="inline-block w-8   mx-2"></span>
+                                /
+                                <span className="inline-block w-8  mx-2"></span>
                               </div>
                             </div>
                           );
                         }
-                        return null;
                       })()}
                     </div>
 
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div id="word-search-grid-for-pdf">
-                        <WordSearchGrid grid={wordSearchData.grid} />
-                        <div>
-                          <h4 className="text-md font-medium">
-                            Palavras para encontrar:
-                          </h4>
-
-                          <ul className="grid grid-cols-2 gap-1">
-                            {wordSearchData.wordList.map(
-                              (word: string, index: number) => (
-                                <li key={index} className="text-sm">
-                                  • {word}
-                                </li>
-                              )
-                            )}
-                          </ul>
-                        </div>
+                    {/* Title */}
+                    <div className="text-center mb-6">
+                      <h2 className="text-lg font-bold uppercase tracking-wider">
+                        CAÇA-PALAVRAS
+                      </h2>
+                    </div>
+                    {/* Words List */}
+                    <div className="text-center">
+                      <h4 className="text-sm font-medium mb-3 uppercase tracking-wide">
+                        Palavras para encontrar:
+                      </h4>
+                      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+                        {wordSearchData.wordList.map(
+                          (word: string, index: number) => (
+                            <span
+                              key={index}
+                              className="text-sm uppercase font-medium"
+                            >
+                              {word}
+                            </span>
+                          )
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex justify-end items-center mt-4 mb-2">
+                    {/* Word Search Grid */}
+                    <div className="flex justify-center mb-6 mt-6">
+                      <div   className=" ">
+                        <WordSearchGrid grid={wordSearchData.grid} />
+                      </div>
+                    </div>
+
+
+                     
+                  </div>
+                )}
+                { wordSearchData && <div className="flex justify-end items-center mt-6" id="word-search-grid-for-pdf">
                       <Button
                         onClick={() => generateWordSearchPDF()}
-                        className="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1"
+                        className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2"
                       >
                         📄 Baixar PDF
                       </Button>
-                    </div>
-                  </div>
-                )}
+                    </div>}
               </div>
             </CardContent>
           </Card>
