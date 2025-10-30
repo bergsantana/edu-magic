@@ -17,25 +17,27 @@ export async function POST(req: Request) {
   const hashedPassword = await bcrypt.hash(password, 10)
 
   try {
-      const user = await prisma.user.create({
-        data: { email, password: hashedPassword },
-      })
-      
-      const token = jwt.sign(
-        { userId: user.id, email: user.email },
-        process.env.JWT_SECRET!,
-        { expiresIn: "1d" }
-      )
-
-      return NextResponse.json({ 
-        token,
-        user: {
-          id: user.id,
-         name: name, // Use the provided name even though it's not in DB yet
-          email: user.email,
-        }
-      })
-
+     
+    const API_URL = process.env.API_URL || 'http://localhost:3333';
+    
+    const response = await fetch(`${API_URL}/auth/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, email, password }),
+    });
+  
+    if (!response.ok) {
+      const errorData = await response.json();
+      return NextResponse.json({ error: errorData.error || 'Signup failed' }, { status: response.status });
+    }
+  
+    const data = await response.json();
+    const { message } = data;
+    return NextResponse.json({ message }, { status: 201 });
+  
+ 
   } catch (err ) {
     console.log("[SIGNUP_ERROR]", err)    
     return NextResponse.json({ error: "Database error" }, { status: 500 })

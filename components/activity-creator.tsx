@@ -64,8 +64,6 @@ export function ActivityCreator() {
 
   const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
 
-
-
   const [wordSearchData, setWordSearchData] = useState<{
     grid: string[][];
     wordList: string[];
@@ -73,8 +71,10 @@ export function ActivityCreator() {
   const [isGeneratingWordSearch, setIsGeneratingWordSearch] = useState(false);
   const [isDocumentHeaderOpen, setIsDocumentHeaderOpen] = useState(false);
 
-
-  const disableGenerateButton = useMemo(() => selectedActivities.every((activity) => !activity) && !!formData.tema, [selectedActivities, formData.tema]) 
+  const disableGenerateButton = useMemo(
+    () => selectedActivities.every((activity) => !activity) && !!formData.tema,
+    [selectedActivities, formData.tema]
+  );
 
   const generateWordSearchPDF = async () => {
     if (!wordSearchData) return;
@@ -224,8 +224,6 @@ export function ActivityCreator() {
       yPosition += 10;
     }
 
-  
-
     // Save the PDF
     doc.save(
       `caca-palavras-${formData.tema.toLowerCase().replace(/\s+/g, "-")}.pdf`
@@ -264,27 +262,23 @@ export function ActivityCreator() {
         Retorne apenas o array JSON na sua resposta, sem texto adicional.
       `;
 
-      const response = await fetch("http://localhost:11434/api/generate", {
+      const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "phi3:3.8b",
+           
           prompt: wordSearchPrompt,
-          stream: false,
-          options: {
-            temperature: 0.7,
-            max_tokens: 500,
-          },
+          
         }),
       });
 
-      const data = await response.json();
-
+      const data = await response.json() as { generatedText: string };
+      console.log("API response data for word search:", data);
       try {
         // Parse the JSON response to get the words array
-        const words = JSON.parse(
-          data?.response?.replaceAll("\n", "")?.match(/\[.*?\]/)[0]
-        );
+        const cleanedStrArr = data?.generatedText.replaceAll("\n", "")?.match(/\[.*?\]/)
+        if (!cleanedStrArr) throw new Error("No array found in response");
+        const words = JSON.parse(cleanedStrArr[0]);
         if (Array.isArray(words)) {
           // Calculate grid size based on longest word
           const maxWordLength = Math.max(...words.map((word) => word.length));
@@ -602,7 +596,6 @@ export function ActivityCreator() {
               <div>
                 <ActivitySelector
                   setActivities={setSelectedActivities}
-                  
                   activities={[
                     {
                       name: "Caça palavras",
@@ -643,29 +636,27 @@ export function ActivityCreator() {
                 />
 
                 <div className="flex m-2 p-2 gap-2  ">
-
-                <Button
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 "
-                  onClick={generateWordSearch}
-                  disabled={isGeneratingWordSearch  || !disableGenerateButton}
-                >
-                  {isGeneratingWordSearch ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Gerando...
-                    </>
-                  ) : (
-                    "Gerar Atividade"
-                  )}
-                </Button>
+                  <Button
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 "
+                    onClick={generateWordSearch}
+                    disabled={isGeneratingWordSearch || !disableGenerateButton}
+                  >
+                    {isGeneratingWordSearch ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Gerando...
+                      </>
+                    ) : (
+                      "Gerar Atividade"
+                    )}
+                  </Button>
                   <Button variant="outline" onClick={handleClear}>
                     Limpar
                   </Button>
                 </div>
               </div>
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                </div>
+              {/* Action Buttons */}
+              <div className="flex gap-3"></div>
             </CardContent>
           </Card>
 

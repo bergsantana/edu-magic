@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma migrate deploy && next build",
+    "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "postinstall": "prisma generate && prisma migrate deploy"
+    "lint": "eslint"
   },
   "dependencies": {
+    "@google/genai": "^1.28.0",
     "@hookform/resolvers": "^3.10.0",
+    "@prisma/adapter-pg": "^6.18.0",
     "@prisma/client": "^6.18.0",
     "@prisma/nextjs-monorepo-workaround-plugin": "^6.18.0",
     "@radix-ui/react-accordion": "1.2.2",

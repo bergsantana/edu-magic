@@ -147,15 +147,14 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         },
         body: JSON.stringify({ name, email, password }),
       });
-
+      
       const data = await response.json();
 
       if (response.ok) {
-        setAuthToken(data.token);
-        setUser(data.user);
+    
         return { success: true };
       } else {
-        return { success: false, error: data.error || 'Erro ao criar conta' };
+        return { success: false, error: (data.error || 'Erro ao criar conta') + data.message,  };
       }
     } catch (error) {
       console.error('Signup error:', error);

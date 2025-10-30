@@ -39,7 +39,7 @@ export default function SignupPage() {
     const result = await signup(name, email, password);
 
     if (result.success) {
-      router.push("/activity-creator");
+      router.push("/auth/login");
     } else {
       setError(result.error || "Erro ao criar conta");
     }
