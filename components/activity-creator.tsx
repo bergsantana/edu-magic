@@ -53,6 +53,8 @@ const disciplinasToWords: Record<string, string> = {
   historia: "História",
   geografia: "Geografia",
   ingles: "Inglês",
+  artes: "Artes",
+  "educacao-fisica": "Educação Física",
 };
 export function ActivityCreator() {
   const { user, logout } = useUser();
@@ -582,6 +584,8 @@ export function ActivityCreator() {
                         <SelectItem value="historia">História</SelectItem>
                         <SelectItem value="geografia">Geografia</SelectItem>
                         <SelectItem value="ingles">Inglês</SelectItem>
+                        <SelectItem value="artes">Artes</SelectItem>
+                        <SelectItem value="educacao-fisica">Educação Física</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
