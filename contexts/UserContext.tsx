@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext,  useState } from "react";
+import React, { createContext, useContext,  useEffect,  useState } from "react";
 import { useRouter } from "next/navigation";
 //port { cookies } from "next/headers";
 
@@ -55,6 +55,15 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     
     return null;
   };
+
+  const setLocalUser = (userData: User) => { 
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  const getLocalUser = (): User | null => {
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData) : null;
+  }
 
   // Set token in cookies
   const setAuthToken = async  (token: string) => {
@@ -111,9 +120,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   // Login function
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    console.log('attempting login with:', { email, password });
-    console.log('login called with #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-    try {
+     try {
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
@@ -127,6 +134,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       if (response.ok) {
         setAuthToken(data.token);
         setUser(data.user);
+        setLocalUser(data.user);
         return { success: true };
       } else {
         return { success: false, error: data.error || 'Erro ao fazer login' };
@@ -171,6 +179,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
     
     clearAuthToken();
+      localStorage.removeItem('user');
     setUser(null);
     router.push('/');
   };
@@ -195,6 +204,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 //     checkAuth();
 //   }, []);
 
+  // Check local user on mount
+ 
+ 
   const contextValue: UserContextType = {
     user,
     loading,
@@ -206,6 +218,16 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     isAuthenticated: !!user,
   };
 
+  useEffect(() => {
+    const checkLocalUser = async () => {
+      const localUser = await getLocalUser();
+      if (localUser) {
+        setUser(localUser);
+      }
+    setLoading(false);
+  };
+  checkLocalUser();
+  }, []);
   return (
     <UserContext.Provider value={contextValue}>
       {children}

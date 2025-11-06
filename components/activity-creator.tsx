@@ -26,7 +26,7 @@ import {
   ChevronUp,
   ChevronDown,
   LogOut,
-  Info
+  Info,
 } from "lucide-react";
 // Import React Markdown for rendering markdown content
 import jsPDF from "jspdf";
@@ -34,7 +34,13 @@ import html2canvas from "html2canvas-pro";
 import WordSearchGrid from "./word-search";
 import ActivitySelector from "./activity-selector";
 import { useUser } from "@/contexts/UserContext";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
+import Link from "next/link";
 
 const words = [
   "SOL",
@@ -65,7 +71,7 @@ export function ActivityCreator() {
     professor: false,
     disciplina: false,
     serie: false,
-     
+
     sala: false,
     turno: false,
     disciplinaValue: "portugues",
@@ -92,20 +98,20 @@ export function ActivityCreator() {
   const generateWordSearchPDF = async () => {
     if (!wordSearchData) return;
 
-    const disciplinaNames = {
-      portugues: "Português",
-      matematica: "Matemática",
-      ciencias: "Ciências",
-      historia: "História",
-      geografia: "Geografia",
-      ingles: "Inglês",
-    };
+    // const disciplinaNames = {
+    //   portugues: "Português",
+    //   matematica: "Matemática",
+    //   ciencias: "Ciências",
+    //   historia: "História",
+    //   geografia: "Geografia",
+    //   ingles: "Inglês",
+    // };
 
-    const dificuldadeNames = {
-      facil: "Fácil",
-      medio: "Médio",
-      dificil: "Difícil",
-    };
+    // const dificuldadeNames = {
+    //   facil: "Fácil",
+    //   medio: "Médio",
+    //   dificil: "Difícil",
+    // };
 
     // Create new PDF document
     const doc = new jsPDF();
@@ -250,7 +256,7 @@ export function ActivityCreator() {
       professor: false,
       disciplina: false,
       serie: false,
-     
+
       sala: false,
       turno: false,
       disciplinaValue: "portugues",
@@ -437,6 +443,35 @@ export function ActivityCreator() {
     }
   };
 
+  const selectAllHeaderFields = () => {
+    if (!formData.escola)  setFormData({
+      ...formData,
+      escola: true,
+      nome: true,
+      professor: true,
+      disciplina: true,
+      serie: true,
+
+      sala: true,
+      turno: true,
+    });
+  
+    else {
+      setFormData({
+        ...formData,
+        escola: false,
+        nome: false,
+        professor: false,
+        disciplina: false,
+        serie: false,
+
+        sala: false,
+        turno: false,
+      });
+    }
+    
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -463,7 +498,11 @@ export function ActivityCreator() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem>Perfil</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="/me" className="flex items-center gap-2">
+                  Perfil
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem>Configuração</DropdownMenuItem>
               <DropdownMenuItem onClick={logout} className="text-red-600">
                 <LogOut className="h-4 w-4 mr-2" />
@@ -480,8 +519,12 @@ export function ActivityCreator() {
           <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
             Criar nova atividade
           </Button>
-          <Button variant="ghost" disabled>Minhas atividades</Button>
-          <Button variant="ghost" disabled>Ajuda rápida</Button>
+          <Button variant="ghost" disabled>
+            Minhas atividades
+          </Button>
+          <Button variant="ghost" disabled>
+            Ajuda rápida
+          </Button>
         </div>
       </div>
 
@@ -505,17 +548,19 @@ export function ActivityCreator() {
                     Cabeçalho do documento
                   </Label>
                   <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className="w-4 h-4 text-gray-500 hover:text-gray-700 cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs">
-                          <p className="text-sm">
-                            Estas configurações alteram apenas os campos do cabeçalho do documento impresso, não influenciam o conteúdo gerado da atividade.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4 text-gray-500 hover:text-gray-700 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        <p className="text-sm">
+                          Estas configurações alteram apenas os campos do
+                          cabeçalho do documento impresso, não influenciam o
+                          conteúdo gerado da atividade.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <button className="    p-4 text-left font-medium text-gray-800  ">
                     {isDocumentHeaderOpen ? (
                       <ChevronUp className="w-5 h-5 text-gray-600" />
@@ -531,6 +576,9 @@ export function ActivityCreator() {
                       : "max-h-0 opacity-0"
                   }`}
                 >
+                  <Button className="mb-6" onClick={selectAllHeaderFields}>
+                    Selecionar todos{" "}
+                  </Button>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     {[
                       { id: "escola", label: "Escola" },
@@ -538,7 +586,7 @@ export function ActivityCreator() {
                       { id: "professor", label: "Professor" },
                       { id: "disciplina", label: "Disciplina" },
                       { id: "serie", label: "Série" },
-                      
+
                       { id: "sala", label: "Sala" },
                       { id: "turno", label: "Turno" },
                     ].map((item) => (
@@ -559,12 +607,11 @@ export function ActivityCreator() {
                         </Label>
                       </div>
                     ))}
-                  </div>
+                    <div>
 
-                  <div>
                     <Label
                       htmlFor="disciplina"
-                      className="mb-2 block text-sm font-medium"
+                      className="   text-sm font-medium"
                     >
                       Disciplina
                     </Label>
@@ -585,9 +632,15 @@ export function ActivityCreator() {
                         <SelectItem value="geografia">Geografia</SelectItem>
                         <SelectItem value="ingles">Inglês</SelectItem>
                         <SelectItem value="artes">Artes</SelectItem>
-                        <SelectItem value="educacao-fisica">Educação Física</SelectItem>
+                        <SelectItem value="educacao-fisica">
+                          Educação Física
+                        </SelectItem>
                       </SelectContent>
                     </Select>
+                    </div>
+                  </div>
+
+                  <div>
                   </div>
                   <div>
                     <Label
@@ -708,7 +761,10 @@ export function ActivityCreator() {
               {/* Word Search Section */}
               <div className="mt-6">
                 {wordSearchData && (
-                  <div className="prose prose-sm max-w-none" id="word-search-grid-for-pdf">
+                  <div
+                    className="prose prose-sm max-w-none"
+                    id="word-search-grid-for-pdf"
+                  >
                     {/* Document Header - similar to the image */}
                     <div className="border-2 border-dashed border-gray-400 p-4 mb-6">
                       {/* Selected Header Fields */}
@@ -721,7 +777,7 @@ export function ActivityCreator() {
                               "professor",
                               "disciplina",
                               "serie",
-                               
+
                               "sala",
                               "turno",
                             ].includes(key) && value
@@ -795,7 +851,7 @@ export function ActivityCreator() {
                     {/* Title */}
                     <div className="text-center mb-6">
                       <h2 className="text-lg font-bold uppercase tracking-wider">
-                        {formData.tema.toUpperCase()} 
+                        {formData.tema.toUpperCase()}
                       </h2>
                     </div>
                     {/* Words List */}
@@ -819,23 +875,25 @@ export function ActivityCreator() {
 
                     {/* Word Search Grid */}
                     <div className="flex justify-center mb-6 mt-6">
-                      <div   className=" ">
+                      <div className=" ">
                         <WordSearchGrid grid={wordSearchData.grid} />
                       </div>
                     </div>
-
-
-                     
                   </div>
                 )}
-                { wordSearchData && <div className="flex justify-end items-center mt-6" id="word-search-grid-for-pdf">
-                      <Button
-                        onClick={() => generateWordSearchPDF()}
-                        className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2"
-                      >
-                        📄 Baixar PDF
-                      </Button>
-                    </div>}
+                {wordSearchData && (
+                  <div
+                    className="flex justify-end items-center mt-6"
+                    id="word-search-grid-for-pdf"
+                  >
+                    <Button
+                      onClick={() => generateWordSearchPDF()}
+                      className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2"
+                    >
+                      📄 Baixar PDF
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
