@@ -35,7 +35,7 @@ const MatchWords: React.FC<MatchWordsProps> = ({ matches }) => {
               className="flex items-center gap-2 border border-gray-400 rounded p-3 bg-white"
             >
               <span className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-gray-400 flex items-center justify-center text-xs">
-                ( )
+                 
               </span>
               <span className="text-sm font-medium">{word}</span>
             </div>
