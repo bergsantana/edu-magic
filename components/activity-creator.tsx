@@ -32,6 +32,8 @@ import {
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas-pro";
 import WordSearchGrid from "./word-search";
+import MatchWords from "./match-words";
+import TrueFalse from "./true-false";
 import ActivitySelector from "./activity-selector";
 import { useUser } from "@/contexts/UserContext";
 import {
@@ -41,6 +43,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import Link from "next/link";
+import { parseGeneratedActivity, promptGenerator } from "@/lib/promptGenerator";
 
 const words = [
   "SOL",
@@ -61,6 +64,16 @@ const disciplinasToWords: Record<string, string> = {
   ingles: "Inglês",
   artes: "Artes",
   "educacao-fisica": "Educação Física",
+};
+
+const activities: { [key: number]: string } = {
+  0: "words",
+  1: "Questionário de múltipla escolha",
+  2: "Questionário dissertativo",
+  3: "Completar lacunas",
+  4: "matches",
+  5: "true_false",
+  6: "Continue o conto",
 };
 export function ActivityCreator() {
   const { user, logout } = useUser();
@@ -87,165 +100,94 @@ export function ActivityCreator() {
     grid: string[][];
     wordList: string[];
   } | null>(null);
+  const [matchWordsData, setMatchWordsData] = useState<
+    | {
+        word: string;
+        matched_word: string;
+      }[]
+    | null
+  >(null);
+  const [trueFalseData, setTrueFalseData] = useState<string[] | null>(null);
   const [isGeneratingWordSearch, setIsGeneratingWordSearch] = useState(false);
   const [isDocumentHeaderOpen, setIsDocumentHeaderOpen] = useState(false);
 
   const disableGenerateButton = useMemo(
-    () => selectedActivities.every((activity) => !activity) && !!formData.tema,
+    () => !!selectedActivities.length && !!formData.tema.length,
     [selectedActivities, formData.tema]
   );
 
+  const selectedActivitiesNames = useMemo(() => { 
+    return selectedActivities.map((activity) => activities[activity]);
+  }, [selectedActivities])
+
   const generateWordSearchPDF = async () => {
-    if (!wordSearchData) return;
-
-    // const disciplinaNames = {
-    //   portugues: "Português",
-    //   matematica: "Matemática",
-    //   ciencias: "Ciências",
-    //   historia: "História",
-    //   geografia: "Geografia",
-    //   ingles: "Inglês",
-    // };
-
-    // const dificuldadeNames = {
-    //   facil: "Fácil",
-    //   medio: "Médio",
-    //   dificil: "Difícil",
-    // };
-
-    // Create new PDF document
+    if (!wordSearchData && !matchWordsData && !trueFalseData) return;
+ 
     const doc = new jsPDF();
     let yPosition = 20;
 
-    // // Title
-    // doc.setFontSize(16);
-    // doc.setFont("helvetica", "bold");
-    // doc.text(`CAÇA-PALAVRAS - ${formData.tema.toUpperCase()}`, 20, yPosition);
-    // yPosition += 15;
-
-    // // Form information
-    // doc.setFontSize(10);
-    // doc.setFont("helvetica", "normal");
-    // doc.text(
-    //   `Disciplina: ${
-    //     disciplinaNames[
-    //       formData.disciplinaValue as keyof typeof disciplinaNames
-    //     ]
-    //   }`,
-    //   20,
-    //   yPosition
-    // );
-    // yPosition += 6;
-    // doc.text(`Série/Ano: ${formData.serieValue}º ano`, 20, yPosition);
-    // yPosition += 6;
-    // doc.text(`Tema: ${formData.tema}`, 20, yPosition);
-    // yPosition += 6;
-    // doc.text(
-    //   `Dificuldade: ${
-    //     dificuldadeNames[formData.dificuldade as keyof typeof dificuldadeNames]
-    //   }`,
-    //   20,
-    //   yPosition
-    // );
-    // yPosition += 10;
-
-    // // Add selected header fields
-    // const cabecalhoFields = Object.entries(formData).filter(
-    //   ([key, value]) =>
-    //     [
-    //       "escola",
-    //       "nome",
-    //       "professor",
-    //       "disciplina",
-    //       "serie",
-    //       "ano",
-    //       "sala",
-    //       "turno",
-    //     ].includes(key) && value
-    // );
-
-    // if (cabecalhoFields.length > 0) {
-    //   cabecalhoFields.forEach(([key, _]) => {
-    //     const labels = {
-    //       escola: "Escola",
-    //       nome: "Nome",
-    //       professor: "Professor(a)",
-    //       disciplina: "Disciplina",
-    //       serie: "Série",
-    //       ano: "Ano",
-    //       sala: "Sala",
-    //       turno: "Turno",
-    //     };
-    //     doc.text(
-    //       `${labels[key as keyof typeof labels]}: _________________`,
-    //       20,
-    //       yPosition
-    //     );
-    //     yPosition += 6;
-    //   });
-    //   yPosition += 5;
-    // }
-
-    // // Instructions
-    // doc.setFont("helvetica", "bold");
-    // doc.text("INSTRUÇÕES:", 20, yPosition);
-    // yPosition += 6;
-    // doc.setFont("helvetica", "normal");
-    // doc.text(
-    //   "Encontre as palavras escondidas na grade abaixo. As palavras podem estar",
-    //   20,
-    //   yPosition
-    // );
-    // yPosition += 6;
-    // doc.text("na horizontal, vertical ou diagonal.", 20, yPosition);
-    // yPosition += 15;
-
-    // // Grid title
-    // doc.setFont("helvetica", "bold");
-    // doc.text("CAÇA-PALAVRAS:", 20, yPosition);
-    // yPosition += 10;
-
-    // Capture the WordSearchGrid component as image
+     
     try {
-      const gridElement = document.getElementById("word-search-grid-for-pdf");
-      if (gridElement) {
-        const canvas = await html2canvas(gridElement, {
+      const headerElement = document.getElementById("activity-headers-for-pdf");
+      if (headerElement) {
+        const canvas = await html2canvas(headerElement, {
           backgroundColor: "#f9fafb",
           scale: 2,
           useCORS: true,
         });
-
         const imgData = canvas.toDataURL("image/png");
-        const imgWidth = 160;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        doc.addImage(imgData, "PNG", 20, yPosition, 170, (canvas.height * 120) / canvas.width);
+        yPosition += (canvas.height * 120) / canvas.width + 10;
 
-        // Check if image fits on current page
-        if (yPosition + imgHeight > 280) {
-          doc.addPage();
-          yPosition = 20;
-        }
-
-        doc.addImage(imgData, "PNG", 20, yPosition, imgWidth, imgHeight);
-        yPosition += imgHeight + 10;
       }
+
+      for (const activity of selectedActivitiesNames)  { 
+        const gridElement = document.getElementById(`${activity}-grid-for-pdf`)
+        console.log('gridElement', gridElement)
+        console.log('activity', activity)
+
+        if (gridElement) {
+          const canvas = await html2canvas(gridElement, {
+            backgroundColor: "#f9fafb",
+            scale: 2,
+            useCORS: true,
+          });
+  
+          const imgData = canvas.toDataURL("image/png");
+          const imgWidth = 160;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  
+          // Check if image fits on current page
+          if (yPosition + imgHeight > 280) {
+            doc.addPage();
+            yPosition = 20;
+          }
+  
+          await doc.addImage(imgData, "PNG", 20, yPosition, imgWidth, imgHeight);
+         yPosition += imgHeight + 10;
+        }
+      } 
+      //const wordSearchGridElement = document.getElementById("word-search-grid-for-pdf");
     } catch (error) {
       console.error("Erro ao capturar o grid:", error);
-      // Fallback para o método anterior
-      doc.setFont("courier", "normal");
-      doc.setFontSize(8);
-      const gridLines = formatWordSearchGrid(wordSearchData.grid).split("\n");
-      gridLines.forEach((line, _) => {
-        if (line.trim() && yPosition < 280) {
-          doc.text(line, 20, yPosition);
-          yPosition += 4;
-        }
-      });
-      yPosition += 10;
+      // Fallback para o método anterior (apenas se wordSearchData existir)
+      if (wordSearchData) {
+        doc.setFont("courier", "normal");
+        doc.setFontSize(8);
+        const gridLines = formatWordSearchGrid(wordSearchData.grid).split("\n");
+        gridLines.forEach((line, _) => {
+          if (line.trim() && yPosition < 280) {
+            doc.text(line, 20, yPosition);
+            yPosition += 4;
+          }
+        });
+        yPosition += 10;
+      }
     }
 
     // Save the PDF
     doc.save(
-      `caca-palavras-${formData.tema.toLowerCase().replace(/\s+/g, "-")}.pdf`
+      `atividade-${formData.tema.toLowerCase().replace(/\s+/g, "-")}.pdf`
     );
   };
 
@@ -267,6 +209,8 @@ export function ActivityCreator() {
     });
 
     setWordSearchData(null);
+    setMatchWordsData(null);
+    setTrueFalseData(null);
   };
 
   const generateWordSearch = async () => {
@@ -274,31 +218,31 @@ export function ActivityCreator() {
 
     setIsGeneratingWordSearch(true);
     try {
-      const wordSearchPrompt = `
-        Gere um array de ${formData.numItens} palavras sobre ${formData.tema} em português brasileiro neste formato: ["exemplo1", "exemplo2", "exemplo3"].
-        Cada item do array deve conter apenas uma palavra relacionada ao tema.
-        As palavras devem ser adequadas para alunos do ${formData.serieValue}º ano.
-        Retorne apenas o array JSON na sua resposta, sem texto adicional.
-      `;
+      // Map selected activity indices to their string keys
+      const selectedActivitiesArray = selectedActivities.map(
+        (activity) => activities[activity]
+      );
+
+      const prompt = promptGenerator(formData.tema, selectedActivitiesArray);
 
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: wordSearchPrompt,
+          prompt: prompt,
         }),
       });
 
       const data = (await response.json()) as { generatedText: string };
       console.log("API response data for word search:", data);
+
       try {
-        // Parse the JSON response to get the words array
-        const cleanedStrArr = data?.generatedText
-          .replaceAll("\n", "")
-          ?.match(/\[.*?\]/);
-        if (!cleanedStrArr) throw new Error("No array found in response");
-        const words = JSON.parse(cleanedStrArr[0]);
-        if (Array.isArray(words)) {
+        const parsedBody = parseGeneratedActivity(data.generatedText);
+        console.log("Parsed activity body:", parsedBody);
+
+        // Handle word search if "words" activity is selected
+        if (parsedBody.words && Array.isArray(parsedBody.words)) {
+          const words = parsedBody.words;
           // Calculate grid size based on longest word
           const maxWordLength = Math.max(...words.map((word) => word.length));
           const gridSize = Math.max(maxWordLength, 10); // Minimum 10x10 grid
@@ -307,9 +251,18 @@ export function ActivityCreator() {
           const { grid, wordList } = generateWordSearchGrid(words, gridSize);
           setWordSearchData({ grid, wordList });
         }
+
+        // Handle match words if "matches" activity is selected
+        if (parsedBody.matches && Array.isArray(parsedBody.matches)) {
+          setMatchWordsData(parsedBody.matches);
+        }
+
+        // Handle true/false if "true_false" activity is selected
+        if (parsedBody.true_false && Array.isArray(parsedBody.true_false)) {
+          setTrueFalseData(parsedBody.true_false);
+        }
       } catch (parseError) {
         console.log("response data", data);
-        console.log("words", words);
         console.error("Error parsing words from response:", parseError);
         // Fallback to default words if parsing fails
         const fallbackWords = [
@@ -444,18 +397,18 @@ export function ActivityCreator() {
   };
 
   const selectAllHeaderFields = () => {
-    if (!formData.escola)  setFormData({
-      ...formData,
-      escola: true,
-      nome: true,
-      professor: true,
-      disciplina: true,
-      serie: true,
+    if (!formData.escola)
+      setFormData({
+        ...formData,
+        escola: true,
+        nome: true,
+        professor: true,
+        disciplina: true,
+        serie: true,
 
-      sala: true,
-      turno: true,
-    });
-  
+        sala: true,
+        turno: true,
+      });
     else {
       setFormData({
         ...formData,
@@ -469,7 +422,6 @@ export function ActivityCreator() {
         turno: false,
       });
     }
-    
   };
 
   return (
@@ -608,40 +560,38 @@ export function ActivityCreator() {
                       </div>
                     ))}
                     <div>
-
-                    <Label
-                      htmlFor="disciplina"
-                      className="   text-sm font-medium"
-                    >
-                      Disciplina
-                    </Label>
-                    <Select
-                      value={formData.disciplinaValue}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, disciplinaValue: value })
-                      }
-                    >
-                      <SelectTrigger id="disciplina">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="portugues">Português</SelectItem>
-                        <SelectItem value="matematica">Matemática</SelectItem>
-                        <SelectItem value="ciencias">Ciências</SelectItem>
-                        <SelectItem value="historia">História</SelectItem>
-                        <SelectItem value="geografia">Geografia</SelectItem>
-                        <SelectItem value="ingles">Inglês</SelectItem>
-                        <SelectItem value="artes">Artes</SelectItem>
-                        <SelectItem value="educacao-fisica">
-                          Educação Física
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                      <Label
+                        htmlFor="disciplina"
+                        className="   text-sm font-medium"
+                      >
+                        Disciplina
+                      </Label>
+                      <Select
+                        value={formData.disciplinaValue}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, disciplinaValue: value })
+                        }
+                      >
+                        <SelectTrigger id="disciplina">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="portugues">Português</SelectItem>
+                          <SelectItem value="matematica">Matemática</SelectItem>
+                          <SelectItem value="ciencias">Ciências</SelectItem>
+                          <SelectItem value="historia">História</SelectItem>
+                          <SelectItem value="geografia">Geografia</SelectItem>
+                          <SelectItem value="ingles">Inglês</SelectItem>
+                          <SelectItem value="artes">Artes</SelectItem>
+                          <SelectItem value="educacao-fisica">
+                            Educação Física
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
-                  <div>
-                  </div>
+                  <div></div>
                   <div>
                     <Label
                       htmlFor="serie"
@@ -689,6 +639,7 @@ export function ActivityCreator() {
               </div>
 
               <div>
+                 
                 <ActivitySelector
                   setActivities={setSelectedActivities}
                   activities={[
@@ -715,12 +666,12 @@ export function ActivityCreator() {
                     {
                       name: "Ligue as colunas",
                       subtitle: "Associe as colunas",
-                      disabled: true,
+                      disabled: false,
                     },
                     {
                       name: "Verdadeiro ou falso",
                       subtitle: "Classifique como verdadeiro ou falso",
-                      disabled: true,
+                      disabled: false,
                     },
                     {
                       name: "Continue o conto",
@@ -759,14 +710,13 @@ export function ActivityCreator() {
           <Card>
             <CardContent className="p-6 min-w-[600px]">
               {/* Word Search Section */}
-              <div className="mt-6">
-                {wordSearchData && (
+              <div className="mt-6"  >
+                {(wordSearchData || matchWordsData || trueFalseData) && (
                   <div
                     className="prose prose-sm max-w-none"
-                    id="word-search-grid-for-pdf"
                   >
                     {/* Document Header - similar to the image */}
-                    <div className="border-2 border-dashed border-gray-400 p-4 mb-6">
+                    <div className="border-2 border-dashed border-gray-400 p-4 mb-6" id="activity-headers-for-pdf">
                       {/* Selected Header Fields */}
                       {(() => {
                         const selectedHeaders = Object.entries(formData).filter(
@@ -848,51 +798,102 @@ export function ActivityCreator() {
                       })()}
                     </div>
 
+                    {/* Word Search Section */}
+                    { 
+                      wordSearchData && (
+                        <div id="words-grid-for-pdf">
+                          {/* Title */}
+                          <div className="text-center mb-6">
+                            <h2 className="text-lg font-bold uppercase tracking-wider">
+                              {formData.tema.toUpperCase()}
+                            </h2>
+                          </div>
+                          {/* Words List */}
+                          <div className="text-center">
+                            <h4 className="text-sm font-medium mb-3 uppercase tracking-wide">
+                              Palavras para encontrar:
+                            </h4>
+                            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+                              {wordSearchData.wordList.map(
+                                (word: string, index: number) => (
+                                  <span
+                                    key={index}
+                                    className="text-sm uppercase font-medium"
+                                  >
+                                    {word}
+                                  </span>
+                                )
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Word Search Grid */}
+                          <div className="flex justify-center mb-6 mt-6">
+                            <div className=" ">
+                              <WordSearchGrid grid={wordSearchData.grid} />
+                            </div>
+                          </div>
+
+                        </div>
+
+                      )
+
+                    }
+                  </div>
+                )}
+
+                {/* Match Words Section */}
+                {matchWordsData && (
+                  <div className="mt-8 prose prose-sm max-w-none" id="matches-grid-for-pdf">
                     {/* Title */}
                     <div className="text-center mb-6">
                       <h2 className="text-lg font-bold uppercase tracking-wider">
-                        {formData.tema.toUpperCase()}
+                        LIGUE AS COLUNAS
                       </h2>
-                    </div>
-                    {/* Words List */}
-                    <div className="text-center">
-                      <h4 className="text-sm font-medium mb-3 uppercase tracking-wide">
-                        Palavras para encontrar:
-                      </h4>
-                      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
-                        {wordSearchData.wordList.map(
-                          (word: string, index: number) => (
-                            <span
-                              key={index}
-                              className="text-sm uppercase font-medium"
-                            >
-                              {word}
-                            </span>
-                          )
-                        )}
-                      </div>
+                       
                     </div>
 
-                    {/* Word Search Grid */}
-                    <div className="flex justify-center mb-6 mt-6">
-                      <div className=" ">
-                        <WordSearchGrid grid={wordSearchData.grid} />
-                      </div>
+                    {/* Match Words Component */}
+                    <div className="mb-6">
+                      <MatchWords matches={matchWordsData} />
                     </div>
                   </div>
                 )}
-                {wordSearchData && (
-                  <div
-                    className="flex justify-end items-center mt-6"
-                    id="word-search-grid-for-pdf"
-                  >
-                    <Button
-                      onClick={() => generateWordSearchPDF()}
-                      className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2"
-                    >
-                      📄 Baixar PDF
-                    </Button>
+
+                {/* True/False Section */}
+                {trueFalseData && (
+                  <div className="mt-8 prose prose-sm max-w-none" id="true_false-grid-for-pdf">
+                    {/* Title */}
+                    <div className="text-center mb-6">
+                      <h2 className="text-lg font-bold uppercase tracking-wider">
+                        VERDADEIRO OU FALSO
+                      </h2>
+                      
+                    </div>
+
+                    {/* True/False Component */}
+                    <div className="mb-6">
+                      <TrueFalse statements={trueFalseData} />
+                    </div>
                   </div>
+                )}
+
+                {wordSearchData || matchWordsData || trueFalseData ? (
+                  <div>
+                    <div className="flex justify-end items-center mt-6">
+                      <Button
+                        onClick={() => {
+                          // TODO: Implement PDF generation for match words
+                          generateWordSearchPDF();
+                        }}
+                        className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2"
+                      >
+                        📄 Baixar PDF
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <></>
                 )}
               </div>
             </CardContent>
